@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Playbook Policy Document Finder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p class="course">PAF 300 AI Playbook Project</p>
+      <h1>AI Playbook Policy Document Finder</h1>
+      <p class="summary">
+        A Python tool for finding, organizing, and documenting authoritative public policy sources for an AI-assisted public administration workflow.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="https://github.com/runmengl/al-playbook1">View GitHub Repository</a>
+        <a class="button secondary" href="#run">How to Run</a>
+      </div>
+    </section>
+
+    <section class="snapshot" aria-label="Project workflow summary">
+      <div class="snapshot-item">
+        <span class="label">Input</span>
+        <strong>Seed URLs or Google CSE</strong>
+      </div>
+      <div class="snapshot-arrow">→</div>
+      <div class="snapshot-item">
+        <span class="label">Process</span>
+        <strong>Classify and organize</strong>
+      </div>
+      <div class="snapshot-arrow">→</div>
+      <div class="snapshot-item">
+        <span class="label">Output</span>
+        <strong>CSV, MD, DOCX, log</strong>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Features</h2>
+        <ul>
+          <li>Finds and organizes authoritative public policy documents.</li>
+          <li>Supports manual seed URL mode.</li>
+          <li>Supports Google Custom Search API mode when credentials are available.</li>
+          <li>Generates CSV, Markdown, DOCX, and run log outputs.</li>
+          <li>Creates timestamped run folders.</li>
+          <li>Maintains <code>run_index.csv</code>.</li>
+          <li>Includes one-click batch launcher and tkinter GUI launcher.</li>
+        </ul>
+      </article>
+
+      <article class="card" id="run">
+        <h2>How to Run</h2>
+        <p>Run the quick demo from the project folder:</p>
+        <pre><code>python ai_playbook_policy_document_finder.py --quick --max-results 3</code></pre>
+      </article>
+
+      <article class="card">
+        <h2>Outputs</h2>
+        <ul class="file-list">
+          <li><code>policy_document_candidates_RUNID.csv</code></li>
+          <li><code>policy_document_report_RUNID.md</code></li>
+          <li><code>policy_document_report_RUNID.docx</code></li>
+          <li><code>run_log_RUNID.txt</code></li>
+        </ul>
+      </article>
+
+      <article class="card responsible">
+        <h2>Responsible Use</h2>
+        <p>
+          This tool does not bypass logins, paywalls, or restricted content. Users must manually verify source authority, relevance, and currency.
+        </p>
+      </article>
+    </section>
+
+    <section class="repo">
+      <h2>Repository</h2>
+      <p>
+        Source code and project files are available at
+        <a href="https://github.com/runmengl/al-playbook1">https://github.com/runmengl/al-playbook1</a>.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
