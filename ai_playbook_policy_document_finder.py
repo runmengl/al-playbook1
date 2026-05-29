@@ -13,6 +13,7 @@ Run:
 Outputs:
     runs/run_YYYYMMDD_HHMMSS_microseconds/policy_document_candidates_RUNID.csv
     runs/run_YYYYMMDD_HHMMSS_microseconds/policy_document_report_RUNID.md
+    runs/run_YYYYMMDD_HHMMSS_microseconds/policy_document_report_RUNID.docx
     runs/run_YYYYMMDD_HHMMSS_microseconds/run_log_RUNID.txt
 """
 
@@ -45,6 +46,7 @@ RUNS_DIR = "runs"
 RUN_INDEX_CSV = os.path.join(RUNS_DIR, "run_index.csv")
 LATEST_OUTPUT_CSV = "policy_document_candidates.csv"
 LATEST_OUTPUT_MD = "policy_document_report.md"
+LATEST_OUTPUT_DOCX = "policy_document_report.docx"
 DEFAULT_SEED_FILE = "seed_urls.txt"
 DEFAULT_MAX_RESULTS = 20
 QUICK_MAX_RESULTS = 3
@@ -99,6 +101,7 @@ RUN_INDEX_COLUMNS = [
     "run_folder",
     "csv_output_path",
     "markdown_report_path",
+    "word_report_path",
     "log_path",
     "also_write_latest",
 ]
@@ -265,6 +268,7 @@ class RunPaths:
     run_folder: str
     csv_path: str
     report_path: str
+    docx_path: str
     log_path: str
 
 
@@ -960,6 +964,162 @@ def write_csv(documents: List[PolicyDocument], path: str) -> None:
             writer.writerow({column: getattr(document, column) for column in CSV_COLUMNS})
 
 
+def write_docx_report(
+    documents: List[PolicyDocument],
+    path: str,
+    args: argparse.Namespace,
+    mode: str,
+) -> None:
+    """Write a Word report using python-docx."""
+    try:
+        from docx import Document
+        from docx.shared import Inches, Pt
+    except ImportError as exc:
+        raise RuntimeError(
+            "python-docx is required to write the Word report. "
+            "Install it with: pip install -r requirements.txt"
+        ) from exc
+
+    document = Document()
+    section = document.sections[0]
+    section.top_margin = Inches(0.8)
+    section.bottom_margin = Inches(0.8)
+    section.left_margin = Inches(0.8)
+    section.right_margin = Inches(0.8)
+
+    styles = document.styles
+    styles["Normal"].font.name = "Calibri"
+    styles["Normal"].font.size = Pt(10.5)
+
+    document.add_heading("AI Playbook Public Policy Document Finder Report", level=1)
+    document.add_paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+
+    document.add_heading("Purpose", level=2)
+    document.add_paragraph(
+        "This report organizes authoritative public policy documents that can "
+        "support an AI Playbook workflow. It is a starting point for source "
+        "selection, prompt grounding, and manual review rather than a substitute "
+        "for reading the documents."
+    )
+
+    document.add_heading("Search Strategy", level=2)
+    search_items = [
+        f"Source mode used: {display_source_mode(mode)}",
+        f"Google API endpoint: {GOOGLE_CUSTOM_SEARCH_ENDPOINT}",
+        f"Seed file: {args.seed_file}",
+        f"Maximum documents requested: {args.max_results}",
+        f"Quick demo mode: {'yes' if args.quick else 'no'}",
+        f"Also wrote latest copies: {'yes' if args.also_write_latest else 'no'}",
+        f"Optional topic: {args.topic or 'none'}",
+        (
+            "Responsible crawling: Google result pages were not scraped; "
+            "robots.txt was checked before content fetching in normal mode; "
+            "paywalls and logins were not bypassed."
+        ),
+    ]
+    for item in search_items:
+        document.add_paragraph(item, style="List Bullet")
+
+    document.add_heading("Summary Counts", level=2)
+    document.add_paragraph(f"Total candidate documents: {len(documents)}")
+    document.add_paragraph(f"Retrieval date: {date.today().isoformat()}")
+    for authority_level, count in count_by(documents, "authority_level").items():
+        document.add_paragraph(
+            f"{authority_level}: {count}",
+            style="List Bullet",
+        )
+
+    document.add_heading("Candidate Documents by Authority Level", level=2)
+    table = document.add_table(rows=1, cols=6)
+    table.style = "Table Grid"
+    headers = [
+        "Title",
+        "Source organization",
+        "Authority level",
+        "Document type",
+        "File type",
+        "URL",
+    ]
+    for index, header in enumerate(headers):
+        cell = table.rows[0].cells[index]
+        cell.text = header
+        for paragraph in cell.paragraphs:
+            for run in paragraph.runs:
+                run.bold = True
+
+    sorted_documents = sorted(
+        documents,
+        key=lambda item: (item.authority_level, item.source_organization, item.title),
+    )
+    for candidate in sorted_documents:
+        cells = table.add_row().cells
+        cells[0].text = candidate.title
+        cells[1].text = candidate.source_organization
+        cells[2].text = candidate.authority_level
+        cells[3].text = candidate.document_type
+        cells[4].text = candidate.file_type
+        cells[5].text = candidate.url
+
+    grouped: Dict[str, List[PolicyDocument]] = {}
+    for candidate in documents:
+        grouped.setdefault(candidate.authority_level or "unknown", []).append(candidate)
+
+    authority_order = [
+        "official government",
+        "congressional/federal oversight",
+        "university/research institution",
+        "established think tank",
+        "unknown",
+    ]
+    ordered_levels = authority_order + [
+        level for level in grouped if level not in authority_order
+    ]
+
+    for authority_level in ordered_levels:
+        candidates = grouped.get(authority_level, [])
+        if not candidates:
+            continue
+        paragraph = document.add_paragraph()
+        run = paragraph.add_run(f"Authority level: {authority_level}")
+        run.bold = True
+        for candidate in candidates:
+            document.add_heading(candidate.title, level=3)
+            details = [
+                f"Source organization: {candidate.source_organization}",
+                f"URL: {candidate.url}",
+                f"Domain: {candidate.domain}",
+                f"File type: {candidate.file_type}",
+                f"Publication year: {candidate.publication_year or 'Unknown'}",
+                f"Policy topic: {candidate.policy_topic}",
+                f"Document type: {candidate.document_type}",
+                f"Relevance note: {candidate.relevance_note}",
+                f"Source mode: {candidate.source_mode}",
+            ]
+            for detail in details:
+                document.add_paragraph(detail, style="List Bullet")
+
+    document.add_heading("How This Supports the AI Playbook", level=2)
+    document.add_paragraph(
+        "The CSV gives a structured source list that can feed an AI Playbook "
+        "workflow: documents can be assigned to policy tasks, checked for "
+        "authority and currency, and used as grounding material before AI "
+        "summaries or recommendations are produced."
+    )
+
+    document.add_heading("Manual Verification Checklist", level=2)
+    checklist_items = [
+        "Confirm the document is publicly accessible.",
+        "Confirm the source is authoritative and relevant.",
+        "Confirm the document is current enough for the policy issue.",
+        "Confirm the script did not use restricted or paywalled content.",
+        "Confirm the AI Playbook user reads the source before relying on AI-generated summaries.",
+    ]
+    for item in checklist_items:
+        document.add_paragraph(item, style="List Bullet")
+
+    document.save(path)
+
+
 def markdown_escape(text: str) -> str:
     return clean_text(text).replace("|", "\\|")
 
@@ -991,6 +1151,7 @@ def create_run_paths() -> RunPaths:
         run_folder=run_folder,
         csv_path=os.path.join(run_folder, f"policy_document_candidates_{run_id}.csv"),
         report_path=os.path.join(run_folder, f"policy_document_report_{run_id}.md"),
+        docx_path=os.path.join(run_folder, f"policy_document_report_{run_id}.docx"),
         log_path=os.path.join(run_folder, f"run_log_{run_id}.txt"),
     )
 
@@ -1046,6 +1207,7 @@ def write_run_log(
     output_paths = [
         run_paths.csv_path,
         run_paths.report_path,
+        run_paths.docx_path,
         run_paths.log_path,
         RUN_INDEX_CSV,
     ]
@@ -1093,6 +1255,7 @@ def append_run_index(
 ) -> None:
     """Append a single successful run to the persistent run index."""
     os.makedirs(RUNS_DIR, exist_ok=True)
+    ensure_run_index_schema()
     file_exists = os.path.exists(RUN_INDEX_CSV)
     row = {
         "run_id": run_paths.run_id,
@@ -1106,6 +1269,7 @@ def append_run_index(
         "run_folder": display_path(run_paths.run_folder),
         "csv_output_path": display_path(run_paths.csv_path),
         "markdown_report_path": display_path(run_paths.report_path),
+        "word_report_path": display_path(run_paths.docx_path),
         "log_path": display_path(run_paths.log_path),
         "also_write_latest": "yes" if args.also_write_latest else "no",
     }
@@ -1114,6 +1278,31 @@ def append_run_index(
         if not file_exists or os.path.getsize(RUN_INDEX_CSV) == 0:
             writer.writeheader()
         writer.writerow(row)
+
+
+def ensure_run_index_schema() -> None:
+    """Upgrade older run_index.csv headers while preserving previous rows."""
+    if not os.path.exists(RUN_INDEX_CSV) or os.path.getsize(RUN_INDEX_CSV) == 0:
+        return
+
+    with open(RUN_INDEX_CSV, "r", newline="", encoding="utf-8") as index_file:
+        reader = csv.DictReader(index_file)
+        existing_columns = reader.fieldnames or []
+        rows = list(reader)
+
+    if existing_columns == RUN_INDEX_COLUMNS:
+        return
+
+    legacy_copy = os.path.join(
+        RUNS_DIR,
+        f"run_index_legacy_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}.csv",
+    )
+    os.replace(RUN_INDEX_CSV, legacy_copy)
+    with open(RUN_INDEX_CSV, "w", newline="", encoding="utf-8") as index_file:
+        writer = csv.DictWriter(index_file, fieldnames=RUN_INDEX_COLUMNS)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({column: row.get(column, "") for column in RUN_INDEX_COLUMNS})
 
 
 def write_report(documents: List[PolicyDocument], path: str, args: argparse.Namespace, mode: str) -> None:
@@ -1323,7 +1512,12 @@ def print_summary(
     print(display_source_mode(mode))
     print(f"Collected {len(documents)} candidate documents")
     print(f"Created run folder: {display_path(run_paths.run_folder, trailing_slash=True)}")
-    created_files = [run_paths.csv_path, run_paths.report_path, run_paths.log_path]
+    created_files = [
+        run_paths.csv_path,
+        run_paths.report_path,
+        run_paths.docx_path,
+        run_paths.log_path,
+    ]
     created_files.extend(latest_paths)
     print(f"Created output files: {', '.join(display_path(path) for path in created_files)}")
     print(f"Updated run index: {display_path(RUN_INDEX_CSV)}")
@@ -1338,12 +1532,14 @@ def main() -> int:
         documents, mode = choose_mode_and_collect(args)
         write_csv(documents, run_paths.csv_path)
         write_report(documents, run_paths.report_path, args, mode)
+        write_docx_report(documents, run_paths.docx_path, args, mode)
 
         latest_paths: List[str] = []
         if args.also_write_latest:
             write_csv(documents, LATEST_OUTPUT_CSV)
             write_report(documents, LATEST_OUTPUT_MD, args, mode)
-            latest_paths = [LATEST_OUTPUT_CSV, LATEST_OUTPUT_MD]
+            write_docx_report(documents, LATEST_OUTPUT_DOCX, args, mode)
+            latest_paths = [LATEST_OUTPUT_CSV, LATEST_OUTPUT_MD, LATEST_OUTPUT_DOCX]
 
         write_run_log(documents, run_paths.log_path, args, mode, run_paths, latest_paths)
         append_run_index(documents, args, mode, run_paths)

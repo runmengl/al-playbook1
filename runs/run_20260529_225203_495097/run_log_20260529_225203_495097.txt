@@ -1,0 +1,33 @@
+AI Playbook Public Policy Document Finder Run Log
+
+Run ID: 20260529_225203_495097
+Date and time: 2026-05-29 22:52:03
+Command line arguments used: --quick --max-results 3
+Mode used: Quick mode
+Source mode: Manual URL mode
+Seed file used: seed_urls.txt
+Topic used: none
+Max results requested: 3
+Candidate documents collected: 3
+
+Output file paths:
+- runs/run_20260529_225203_495097/policy_document_candidates_20260529_225203_495097.csv
+- runs/run_20260529_225203_495097/policy_document_report_20260529_225203_495097.md
+- runs/run_20260529_225203_495097/run_log_20260529_225203_495097.txt
+- runs/run_index.csv
+
+Skipped URLs or errors:
+- Skipped due max-results limit: https://www.whitehouse.gov/wp-content/uploads/2024/03/budget_fy2025.pdf
+- Skipped due max-results limit: https://www.urban.org/research/publication/housing-supply-chartbook
+- Skipped due max-results limit: https://www.brookings.edu/articles/the-affordable-housing-crisis-explained/
+- Skipped due max-results limit: https://www.rand.org/pubs/research_reports/RRA956-21.html
+- Skipped due max-results limit: https://www.pewresearch.org/politics/2024/02/29/americans-top-policy-priority-for-2024-strengthening-the-economy/
+- Skipped due max-results limit: https://www.kff.org/medicaid/issue-brief/10-things-to-know-about-medicaid/
+- Skipped due max-results limit: https://www.cbpp.org/research/federal-budget/policy-basics-introduction-to-the-federal-budget-process
+- https://www.gao.gov/products/gao-24-106946: Quick mode URL-level metadata only
+- https://www.cbo.gov/publication/59946: Quick mode URL-level metadata only
+- https://www.congress.gov/crs-product/R47843: Quick mode URL-level metadata only
+- Quick mode skipped deep content fetching for all candidates.
+
+Manual verification reminder:
+- Manual verification required before relying on any source.
