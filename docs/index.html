@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Playbook Policy Document Finder</title>
   <link rel="stylesheet" href="style.css">
+  <script src="live-run-demo.js" defer></script>
 </head>
 <body>
   <main class="page">
@@ -16,7 +17,7 @@
       </p>
       <div class="actions">
         <a class="button primary" href="https://github.com/runmengl/al-playbook1">View GitHub Repository</a>
-        <a class="button secondary" href="#run">How to Run</a>
+        <a class="button secondary" id="how-to-run-button" href="#run">How to Run</a>
       </div>
     </section>
 
@@ -51,10 +52,76 @@
         </ul>
       </article>
 
-      <article class="card" id="run">
-        <h2>How to Run</h2>
-        <p>Run the quick demo from the project folder:</p>
-        <pre><code>python ai_playbook_policy_document_finder.py --quick --max-results 3</code></pre>
+      <article class="live-demo-panel" id="run" hidden>
+        <div class="live-demo-header">
+          <div>
+            <p class="eyebrow">How to Run</p>
+            <h2>Live Run Demo</h2>
+            <p>
+              This is a simulated browser demo for classroom walkthroughs. It does not run Python,
+              crawl websites, call external APIs, or use credentials.
+            </p>
+          </div>
+          <span class="demo-status" id="demo-status">Idle</span>
+        </div>
+
+        <div class="command-row" aria-label="Example command">
+          <code id="demo-command">python ai_playbook_policy_document_finder.py --quick --max-results 10</code>
+          <button class="button secondary compact" type="button" id="copy-demo-command">Copy Command</button>
+        </div>
+
+        <div class="demo-controls">
+          <button class="button primary" type="button" id="start-demo-run">Start Demo Run</button>
+          <button class="button secondary" type="button" id="reset-demo-run">Reset Demo</button>
+        </div>
+
+        <div class="progress-wrap" aria-label="Demo progress">
+          <div class="progress-meta">
+            <span>Progress</span>
+            <span id="demo-progress-label">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="demo-progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="live-status-row" aria-label="Live demo status">
+          <span class="status-pill is-active" data-live-status="Idle">Idle</span>
+          <span class="status-pill" data-live-status="Initializing">Initializing</span>
+          <span class="status-pill" data-live-status="Fetching">Fetching</span>
+          <span class="status-pill" data-live-status="Classifying">Classifying</span>
+          <span class="status-pill" data-live-status="Generating files">Generating files</span>
+          <span class="status-pill" data-live-status="Complete">Complete</span>
+        </div>
+
+        <div class="terminal" aria-label="Simulated terminal output">
+          <div class="terminal-top" aria-hidden="true">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+          </div>
+          <div class="terminal-output" id="terminal-output" aria-live="polite"></div>
+          <div class="terminal-prompt">
+            <span>$</span>
+            <span class="cursor" id="terminal-cursor" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <section class="demo-summary" id="demo-summary" aria-label="Demo run summary" hidden>
+          <h3>Demo Run Summary</h3>
+          <ul>
+            <li><strong>Sources scanned:</strong> 12</li>
+            <li><strong>Relevant sources found:</strong> 7</li>
+            <li><strong>Output formats prepared:</strong> CSV, Markdown, DOCX, run log</li>
+            <li><strong>Status:</strong> Complete</li>
+          </ul>
+          <div class="file-badges" aria-label="Simulated output files">
+            <span>sources.csv</span>
+            <span>source_summary.md</span>
+            <span>playbook_report.docx</span>
+            <span>run_log.txt</span>
+          </div>
+        </section>
       </article>
 
       <article class="card">
