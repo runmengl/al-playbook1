@@ -6,6 +6,7 @@
   <title>AI Playbook Policy Document Finder</title>
   <link rel="stylesheet" href="style.css">
   <script src="live-run-demo.js" defer></script>
+  <script src="paper-keyword-search.js" defer></script>
 </head>
 <body>
   <main class="page">
@@ -50,6 +51,64 @@
           <li>Maintains <code>run_index.csv</code>.</li>
           <li>Includes one-click batch launcher and tkinter GUI launcher.</li>
         </ul>
+      </article>
+
+      <article class="card paper-search-card" id="paper-search">
+        <div class="paper-search-header">
+          <div>
+            <p class="eyebrow">Local Library</p>
+            <h2>Paper Keyword Search</h2>
+          </div>
+          <span class="demo-status" id="paper-search-status">Idle</span>
+        </div>
+
+        <label class="field-label" for="paper-keyword-input">Keyword</label>
+        <div class="search-input-row">
+          <input
+            id="paper-keyword-input"
+            type="text"
+            placeholder="Enter keyword, e.g., public policy"
+            autocomplete="off"
+          >
+          <button class="button primary" type="button" id="start-paper-search">Start Paper Search</button>
+        </div>
+
+        <div class="live-status-row paper-status-row" aria-label="Paper search status">
+          <span class="status-pill is-active" data-paper-status="Idle">Idle</span>
+          <span class="status-pill" data-paper-status="Searching">Searching</span>
+          <span class="status-pill" data-paper-status="Classifying">Classifying</span>
+          <span class="status-pill" data-paper-status="Complete">Complete</span>
+        </div>
+
+        <div class="search-activity-label" id="paper-search-activity" aria-live="polite">
+          Ready for local keyword search
+        </div>
+
+        <div class="progress-wrap" aria-label="Paper search progress">
+          <div class="progress-meta">
+            <span>Progress</span>
+            <span id="paper-search-progress-label">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="paper-search-progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="terminal paper-terminal" aria-label="Simulated paper search terminal output">
+          <div class="terminal-top" aria-hidden="true">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+          </div>
+          <div class="terminal-output" id="paper-terminal-output" aria-live="polite"></div>
+          <div class="terminal-prompt">
+            <span>$</span>
+            <span class="cursor" id="paper-terminal-cursor" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <section class="paper-results" id="paper-results" aria-label="Paper search results" hidden></section>
+        <section class="paper-loaded" id="paper-loaded-message" aria-live="polite" hidden></section>
       </article>
 
       <article class="live-demo-panel" id="run" hidden>
